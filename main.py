@@ -1,10 +1,12 @@
-from rcon_client import FactorioRCON
+from IA.rcon_client import FactorioRCON
+from IA.item_context import augment_prompt_with_context
 import ollama
 import time
 import json
 import os
+import shutil
+import glob
 from IA.FILES import FACTORY_SCRIPT_OUTPUT_FILE, FACTORY_SCRIPT_OUTPUT_DIR
-import os
 import uuid
 
 # Configuration from environment (safer for deployments)
@@ -37,8 +39,8 @@ MAX_MEMORY = 200
 SYSTEM_PROMPT = (
     "Você é Monika, uma IA de suporte dentro do jogo Factorio."
     " Sempre responda estritamente no contexto do universo Factorio, usando"
-    " terminologia do jogo (ex: minério de ferro, cobre, bichos, caldeiras, braços robóticos, trem, ciência, foguete)."
     " Use BBCode para itens/entidades quando apropriado: [item=...], [entity=...], [technology=...]."
+    " Nao use: [entity=player] [name=Nome do jogador] ou similares voce ja esta asos com o jogador."
     " Se o pedido for fora do contexto do jogo, responda educadamente que não pode ajudar com isso e direcione para assuntos de automação/fábrica."
 )
 
@@ -197,8 +199,9 @@ def main_loop():
                                 messages.append({"role": "user", "content": entry["prompt"]})
                             if entry.get("response"):
                                 messages.append({"role": "assistant", "content": entry["response"]})
-                        # adiciona a mensagem atual como último usuário
-                        messages.append({"role": "user", "content": prompt})
+                        # adiciona a mensagem atual (com contexto automático, se houver)
+                        augmented_prompt = augment_prompt_with_context(prompt)
+                        messages.append({"role": "user", "content": augmented_prompt})
 
                         # Log curto do system (não imprime todo o conteúdo para evitar flood)
                         try:
@@ -222,6 +225,37 @@ def main_loop():
                             "prompt": prompt,
                             "response": resp
                         }
+                        # --- Anexar imagem (se existir) ---
+                        # Busca a imagem mais recente em IA/IMGS/ e a copia (atomicamente)
+                        try:
+                            imgs_dir = os.path.join(os.path.dirname(__file__), "IA", "IMGS")
+                            image_dest_name = None
+                            if os.path.isdir(imgs_dir):
+                                # procura arquivos de imagem comuns
+                                patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"]
+                                candidates = []
+                                for p in patterns:
+                                    candidates.extend(glob.glob(os.path.join(imgs_dir, p)))
+
+                                if candidates:
+                                    # escolhe o mais recentemente modificado
+                                    candidates.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+                                    src_image = candidates[0]
+                                    _, ext = os.path.splitext(src_image)
+                                    image_dest_name = f"{data['id']}{ext}"
+                                    dest_path = os.path.join(FACTORY_SCRIPT_OUTPUT_DIR, image_dest_name)
+                                    tmp_path = dest_path + ".tmp"
+                                    # copia bytes para arquivo tmp e substitui
+                                    with open(src_image, "rb") as rf, open(tmp_path, "wb") as wf:
+                                        shutil.copyfileobj(rf, wf)
+                                        wf.flush()
+                                        os.fsync(wf.fileno())
+                                    os.replace(tmp_path, dest_path)
+                                    print(f"[{now()}] COPIED image to: {dest_path} (atomic)")
+                            # adiciona referência da imagem no JSON (ou None)
+                            data["image"] = image_dest_name
+                        except Exception as e:
+                            print(f"[{now()}] ERROR handling image: {e}")
 
                         # Escreve de forma atômica: escreve em tmp e faz replace
                         tmp_file = FACTORY_SCRIPT_OUTPUT_FILE + ".tmp"

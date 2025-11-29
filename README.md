@@ -72,15 +72,15 @@ Logs e troubleshooting
 Adicionei um fluxo simples para tornar a instalação mais dinâmica e reproduzível.
 
 - `requirements.txt`: lista de dependências Python do projeto.
-- `scripts/install.sh`: cria um virtualenv, instala dependências e mostra próximos passos.
+ - `install.sh`: cria um virtualenv, instala dependências e mostra próximos passos.
 - `.env.example`: exemplo das variáveis de ambiente usadas pelo projeto.
 
 Passos rápidos:
 
 ```bash
 # tornar o script executável e executá-lo (recomendado)
-chmod +x scripts/install.sh
-./scripts/install.sh
+chmod +x install.sh
+./install.sh
 
 # Ative o virtualenv (separado)
 source .venv/bin/activate
