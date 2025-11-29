@@ -1,0 +1,28 @@
+{
+  "steel-chest": {
+    "name": "Steel chest",
+    "prototype_type": "container",
+    "stack_size": 50,
+    "inventory_size": 48,
+    "health": 350,
+    "recipe": {
+      "time": 0.5,
+      "ingredients": {
+        "steel-plate": 8
+      }
+    },
+    "produced_by": [
+      "assembling-machine-1",
+      "assembling-machine-2",
+      "assembling-machine-3"
+    ],
+    "used_by": [
+      "player",
+      "logistics-network"
+    ],
+    "tech_required": [
+      "steel-processing"
+    ],
+    "wiki_url": "https://wiki.factorio.com/Steel_chest"
+  }
+}
