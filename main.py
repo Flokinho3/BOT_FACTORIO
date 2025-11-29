@@ -9,7 +9,7 @@ import uuid
 
 # Configuration from environment (safer for deployments)
 # Defaults kept for local development convenience.
-HOST = os.getenv("FACTORIO_RCON_HOST", "127.0.0.1")
+HOST = os.getenv("FACTORIO_RCON_HOST", "localhost")
 PORT = int(os.getenv("FACTORIO_RCON_PORT", "27015"))
 PASSWORD = os.getenv("FACTORIO_RCON_PASSWORD", "senha")
 # Ollama model override (env)
