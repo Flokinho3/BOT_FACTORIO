@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Script de instalação (cria venv, instala dependências e dá instruções adicionais)
 # Uso:
-#   chmod +x scripts/install.sh
-#   ./scripts/install.sh
+#   chmod +x install.sh
+#   ./install.sh
 
 PYTHON=${PYTHON:-python3}
 VENV_DIR=${VENV_DIR:-.venv}
@@ -38,4 +38,4 @@ echo "  5) Execute: python3 main.py"
 echo
 echo "Observações:"
 echo "- O pacote 'ollama' instalado via pip é o cliente Python. O daemon/CLI do Ollama ainda precisa estar instalado separadamente conforme a documentação do Ollama."
-echo "- Se preferir usar um gerenciador de dependências diferente (poetry/pipx), adapte o fluxo acima." 
+echo "- Se preferir usar um gerenciador de dependências diferente (poetry/pipx), adapte o fluxo acima."
